@@ -1,0 +1,46 @@
+import cv2
+import cvzone
+from cvzone.FaceMeshModule import FaceMeshDetector 
+
+capture = cv2.VideoCapture(0)
+
+detector = FaceMeshDetector(maxFaces=1)
+idlist=[22,23,24,26,159,158,157,26,161]
+
+while True:
+    ret, frame = capture.read()
+    
+    frame,faces=detector.findFaceMesh(frame,draw=False)
+
+    if not ret:
+           print("input not recived")
+           break
+    
+    if faces:
+         face=faces[0]
+         for id in idlist:
+              cv2.circle(frame,face[id],5,(255,0,255))
+
+    lefteyeup=face[159]
+    lefteyedown=face[23]
+    lefteyeleftpoint=face[247]
+    lefteyerightpoint=face[243]
+
+    cv2.line(frame,lefteyedown,lefteyeup,(0,200,0),2)
+    cv2.line(frame,lefteyeleftpoint,lefteyerightpoint,(0,200,0),2)
+    
+    lefteyedistance,_=detector.findDistance(lefteyeup,lefteyedown)
+    lefteyedistancehori,_=detector.findDistance(lefteyeleftpoint,lefteyerightpoint)
+
+    print(int((lefteyedistance/lefteyedistancehori)*100))
+
+    if(int((lefteyedistance/lefteyedistancehori)*100)<29):
+         print("human verified")
+         break
+    cv2.imshow('Webcam', frame)
+   
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+capture.release()
+cv2.destroyAllWindows()
